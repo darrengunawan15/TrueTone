@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: truetone-backend
+  namespace: truetone
+  labels:
+    app: truetone-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: truetone-backend
+  template:
+    metadata:
+      labels:
+        app: truetone-backend
+    spec:
+      containers:
+      - name: backend
+        image: truetoneregistry.azurecr.io/truetone-backend:latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: truetone-backend
+  namespace: truetone
+spec:
+  selector:
+    app: truetone-backend
+  ports:
+  - protocol: TCP
+    port: 8000
+    targetPort: 8000
+  type: ClusterIP

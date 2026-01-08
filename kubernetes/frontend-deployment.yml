@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: truetone-frontend
+  namespace: truetone
+  labels:
+    app: truetone-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: truetone-frontend
+  template:
+    metadata:
+      labels:
+        app: truetone-frontend
+    spec:
+      containers:
+      - name: frontend
+        image: truetoneregistry.azurecr.io/truetone-frontend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: truetone-frontend
+  namespace: truetone
+spec:
+  selector:
+    app: truetone-frontend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
