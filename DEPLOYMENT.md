@@ -1,65 +1,270 @@
-# TrueTone Deployment Guide
+# TrueTone - Code Documentation
 
-## Prerequisites
-- Azure account with student credits
-- Azure CLI installed: https://learn.microsoft.com/en-us/cli/azure/install-azure-cli
-- Docker Desktop installed
-- kubectl installed: `az aks install-cli`
+
+## Project Overview
+
+
+**TrueTone** is a real-time emotion recognition application that uses machine learning to classify text sentiment into 6 emotion categories: anger, fear, joy, love, sadness, and surprise. The application consists of a React frontend and a FastAPI backend powered by a DistilRoBERTa model trained on the dair-ai/emotion dataset.
+
+
+**GitHub Repository:** [Link to your GitHub repository](https://github.com/your-username/truetone)
+
 
 ---
 
-## Step 1: Test Locally with Docker Compose
 
-```powershell
-cd c:\Users\viona\OneDrive\Desktop\Uni\TrueTone
+## Table of Contents
 
-# Build and run locally
+
+1. [Project Structure](#project-structure)
+2. [Prerequisites](#prerequisites)
+3. [Local Development Setup](#local-development-setup)
+4. [Cloud Deployment (Azure)](#cloud-deployment-azure)
+5. [Running the Application](#running-the-application)
+6. [API Documentation](#api-documentation)
+7. [Architecture](#architecture)
+8. [Environment Configuration](#environment-configuration)
+9. [Troubleshooting](#troubleshooting)
+
+
+---
+
+
+## Project Structure
+
+
+```
+TrueTone/
+├── app/                              # Python FastAPI backend
+│   ├── main.py                       # FastAPI application entry point
+│   ├── audio_main.py                 # Audio processing module
+│   ├── model.py                      # ML model inference logic
+│   ├── emotion_roberta.pt            # Pre-trained emotion model weights
+│   ├── id2label.pt                   # Label mapping file
+│   └── tokenizer/                    # BERT tokenizer files
+│       ├── vocab.json
+│       ├── merges.txt
+│       ├── special_tokens_map.json
+│       └── tokenizer_config.json
+├── frontend/                         # React + Vite frontend
+│   ├── App.jsx                       # Main React component
+│   ├── main.jsx                      # React entry point
+│   ├── App.css                       # Styling
+│   ├── index.html                    # HTML template
+│   ├── package.json                  # Node dependencies
+│   ├── vite.config.js                # Vite bundler config
+│   ├── nginx.conf                    # Nginx configuration
+│   └── Dockerfile                    # Frontend Docker image
+├── kubernetes/                       # Kubernetes manifests
+│   ├── namespace.yml                 # K8s namespace definition
+│   ├── backend-deployment.yml        # Backend deployment & service
+│   └── frontend-deployment.yml       # Frontend deployment & service
+├── Dockerfile                        # Backend Docker image
+├── docker-compose.yml                # Local Docker Compose setup
+├── requirements.txt                  # Python dependencies
+├── DEPLOYMENT.md                     # Detailed deployment guide
+├── README.md                         # Project overview
+└── CODE_DOCUMENTATION.md             # This file
+
+
+```
+
+
+---
+
+
+## Prerequisites
+
+
+### For Local Development
+
+
+- **Python 3.10+** installed
+- **Node.js 18+** and npm installed
+- **Docker Desktop** (for containerized local testing)
+- **Git** installed and configured
+- ~2GB RAM minimum for model inference
+
+
+### For Azure Cloud Deployment
+
+
+- **Azure Account** with active subscription (student credits recommended)
+- **Azure CLI** installed: https://learn.microsoft.com/en-us/cli/azure/install-azure-cli
+- **Docker Desktop** installed
+- **kubectl** (Kubernetes command-line tool): `az aks install-cli`
+- **PowerShell 5.1+** (for running deployment scripts)
+
+
+---
+
+
+## Local Development Setup
+
+
+### 1. Clone the Repository
+
+
+```bash
+git clone https://github.com/your-username/truetone.git
+cd truetone
+```
+
+
+### 2. Backend Setup (Python)
+
+
+```bash
+# Create a virtual environment
+python -m venv venv
+
+
+# Activate virtual environment
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
+
+
+# Install Python dependencies
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+
+**Dependencies Overview:**
+- **FastAPI 0.109.0**: Web framework for building the REST API
+- **Uvicorn 0.27.0**: ASGI server for running FastAPI
+- **PyTorch 2.1.2**: Deep learning framework for model inference
+- **Transformers 4.36.2**: Hugging Face library for loading pre-trained models
+- **Accelerate**: Distributed model inference support
+- **NumPy**: Numerical computing library
+
+
+### 3. Frontend Setup (Node.js)
+
+
+```bash
+# Navigate to frontend directory
+cd frontend
+
+
+# Install Node dependencies
+npm install
+
+
+# Return to project root
+cd ..
+```
+
+
+### 4. Run Backend Locally
+
+
+```bash
+# Make sure virtual environment is activated
+python -m uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+
+Backend will be available at: `http://localhost:8000`
+- Interactive API docs: `http://localhost:8000/docs`
+- Alternative docs: `http://localhost:8000/redoc`
+
+
+### 5. Run Frontend Locally
+
+
+```bash
+cd frontend
+npm run dev
+```
+
+
+Frontend will be available at: `http://localhost:5173` (or the port shown in console)
+
+
+### 6. Using Docker Compose (Alternative)
+
+
+For a complete local environment with both services:
+
+
+```bash
+# Build and start all services
 docker-compose up --build
 
-# Test the app
+
 # Frontend: http://localhost
 # Backend: http://localhost:8000
 ```
 
+
+Services will automatically connect. The frontend is configured to communicate with the backend on the same network.
+
+
 ---
 
-## Step 2: Set Up Azure Resources
+
+## Cloud Deployment (Azure)
+
+
+### Overview
+
+
+TrueTone is deployed on **Microsoft Azure** using:
+- **Azure Container Registry (ACR)**: Stores Docker images
+- **Azure Kubernetes Service (AKS)**: Orchestrates containerized deployment
+- **Azure Resource Group**: Manages all resources
+
+
+**Cost Estimate (Student Plan):** ~$45-60/month (covered by $100 Azure student credit)
+
+
+### Step 1: Set Up Azure Resources
+
 
 ```powershell
 # Login to Azure
 az login
 
+
 # Create resource group
 az group create --name truetone-rg --location eastus
 
-# Create Azure Container Registry (ACR)
+
+# Create Azure Container Registry (Basic tier for cost efficiency)
 az acr create `
   --resource-group truetone-rg `
   --name truetoneregistry `
   --sku Basic
 
-# Get ACR login server
+
+# Retrieve ACR login server URL
 $ACR_URL = az acr show --resource-group truetone-rg --name truetoneregistry --query loginServer -o tsv
 Write-Host "ACR URL: $ACR_URL"
 ```
 
----
 
-## Step 3: Build and Push Docker Images
+### Step 2: Build and Push Docker Images
+
 
 ```powershell
-# Login to ACR
+# Login to Azure Container Registry
 az acr login --name truetoneregistry
+
 
 # Set variables
 $ACR_URL = "truetoneregistry.azurecr.io"
 $REGISTRY = "truetoneregistry"
+
 
 # Build and push backend image
 az acr build `
   --registry $REGISTRY `
   --image truetone-backend:latest `
   .
+
 
 # Build and push frontend image
 az acr build `
@@ -68,13 +273,13 @@ az acr build `
   ./frontend
 ```
 
----
 
-## Step 4: Create AKS Cluster
+### Step 3: Create AKS Cluster
+
 
 ```powershell
 # Create AKS cluster (may take 5-10 minutes)
-# Using B1s VM for cost efficiency on student plan
+# B1s VM SKU for cost optimization on student plan
 az aks create `
   --resource-group truetone-rg `
   --name truetone-cluster `
@@ -88,133 +293,91 @@ az aks create `
   --service-cidr 10.0.0.0/16 `
   --dns-service-ip 10.0.0.10
 
+
 # Get cluster credentials
 az aks get-credentials `
   --resource-group truetone-rg `
   --name truetone-cluster
 
+
 # Verify connection
 kubectl cluster-info
 ```
 
----
 
-## Step 5: Attach ACR to AKS
+### Step 4: Attach ACR to AKS
+
 
 ```powershell
-# Attach ACR to AKS
+# Enable AKS to pull images from ACR
 az aks update `
   --name truetone-cluster `
   --resource-group truetone-rg `
   --attach-acr truetoneregistry
 ```
 
----
 
-## Step 6: Update Kubernetes Manifests
+### Step 5: Configure Kubernetes Manifests
 
-Edit the following files and replace `YOUR_REGISTRY` with your ACR login server:
 
-- [kubernetes/backend-deployment.yml](kubernetes/backend-deployment.yml#L14)
-- [kubernetes/frontend-deployment.yml](kubernetes/frontend-deployment.yml#L14)
+Update the ACR URL in Kubernetes deployment files:
 
-Example:
+
 ```powershell
-# Replace YOUR_REGISTRY with your ACR URL
 $ACR_URL = "truetoneregistry.azurecr.io"
 
-# Update manifests
+
+# Update backend deployment
 (Get-Content kubernetes/backend-deployment.yml) -replace 'YOUR_REGISTRY', $ACR_URL | Set-Content kubernetes/backend-deployment.yml
+
+
+# Update frontend deployment
 (Get-Content kubernetes/frontend-deployment.yml) -replace 'YOUR_REGISTRY', $ACR_URL | Set-Content kubernetes/frontend-deployment.yml
 ```
 
----
 
-## Step 7: Deploy to AKS
+### Step 6: Deploy to AKS
+
 
 ```powershell
-# Create namespace and deploy
+# Create namespace
 kubectl apply -f kubernetes/namespace.yml
+
+
+# Deploy backend and frontend
 kubectl apply -f kubernetes/backend-deployment.yml
 kubectl apply -f kubernetes/frontend-deployment.yml
+
 
 # Check deployment status
 kubectl get pods -n truetone
 kubectl get svc -n truetone
 
-# Wait for LoadBalancer external IP
+
+# Wait for LoadBalancer external IP (this may take a few minutes)
 kubectl get svc truetone-frontend -n truetone -w
 
-# Once external IP appears, access your app at: http://<EXTERNAL_IP>
+
+# Once the external IP is assigned, access the app at:
+# http://<EXTERNAL_IP>
 ```
 
----
 
-## Step 8: Monitoring & Logs
+### Step 7: Monitor Deployments
 
 ```powershell
 # View pod logs
 kubectl logs -n truetone -l app=truetone-backend --tail=100
 
-# View all resources in namespace
+
+# View all resources
 kubectl get all -n truetone
 
-# Describe a deployment
+
+# Describe a deployment for debugging
 kubectl describe deployment truetone-backend -n truetone
 
-# Scale replicas
+
+# Scale replicas (for load balancing)
 kubectl scale deployment truetone-backend -n truetone --replicas=3
 ```
-
----
-
-## Cost Estimation (Student Plan)
-
-| Resource | Monthly Cost (Est.) |
-|----------|-------------------|
-| AKS Cluster (1 node, B1s) | ~$30-40 |
-| ACR (Basic) | ~$5 |
-| Public IP | ~$3 |
-| Data Transfer | ~$5-10 |
-| **Total** | **~$45-60** |
-
-✅ **Covered by $100 Azure student credit!**
-
----
-
-## Troubleshooting
-
-**Pod stuck in Pending:**
-```powershell
-kubectl describe pod <pod-name> -n truetone
-```
-
-**Image pull errors:**
-```powershell
-# Check ACR credentials
-kubectl get secrets -n truetone
-az aks update -n truetone-cluster -g truetone-rg --attach-acr truetoneregistry
-```
-
-**Check cluster status:**
-```powershell
-az aks show --resource-group truetone-rg --name truetone-cluster --query "agentPoolProfiles[0].provisioningState"
-```
-
----
-
-## Cleanup (Delete Resources)
-
-```powershell
-# Delete resource group (removes everything)
-az group delete --name truetone-rg --yes --no-wait
-```
-
----
-
-## Next Steps
-
-- Set up CI/CD with GitHub Actions
-- Add HTTPS with cert-manager
-- Enable auto-scaling with Horizontal Pod Autoscaler
-- Add persistent storage for model files
