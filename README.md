@@ -1,10 +1,10 @@
 # TrueTone
 
-TrueTone is a real-time emotion recognition application that analyzes text and classifies emotional tone using advanced machine learning. The system combines a modern React-based frontend with a FastAPI backend powered by a fine-tuned DistilRoBERTa transformer model for accurate and efficient emotion detection.
+TrueTone is a real-time emotion recognition application that analyzes text and classifies emotional tone using advanced. The system combines a React-based frontend with a FastAPI backend powered by a fine-tuned transformer model for accurate and efficient emotion detection.
 
 ## Overview
 
-TrueTone enables users to input text and receive instant classification across seven distinct emotional categories. The application provides not only the primary emotion prediction but also confidence scores and probability distributions across all emotion types, offering comprehensive insight into the model's classification reasoning.
+TrueTone enables users to input text and receive instant classification across seven different emotional categories. The application provides not only the primary emotion prediction but also confidence scores and probability distributions across all emotion types, offering comprehensive insight into the model's classification reasoning.
 
 ## Supported Emotions
 
