@@ -7,68 +7,7 @@
 **TrueTone** is a real-time emotion recognition application that uses machine learning to classify text sentiment into 6 emotion categories: anger, fear, joy, love, sadness, and surprise. The application consists of a React frontend and a FastAPI backend powered by a DistilRoBERTa model trained on the dair-ai/emotion dataset.
 
 
-**GitHub Repository:** [Link to your GitHub repository](https://github.com/your-username/truetone)
-
-
----
-
-
-## Table of Contents
-
-
-1. [Project Structure](#project-structure)
-2. [Prerequisites](#prerequisites)
-3. [Local Development Setup](#local-development-setup)
-4. [Cloud Deployment (Azure)](#cloud-deployment-azure)
-5. [Running the Application](#running-the-application)
-6. [API Documentation](#api-documentation)
-7. [Architecture](#architecture)
-8. [Environment Configuration](#environment-configuration)
-9. [Troubleshooting](#troubleshooting)
-
-
----
-
-
-## Project Structure
-
-
-```
-TrueTone/
-├── app/                              # Python FastAPI backend
-│   ├── main.py                       # FastAPI application entry point
-│   ├── audio_main.py                 # Audio processing module
-│   ├── model.py                      # ML model inference logic
-│   ├── emotion_roberta.pt            # Pre-trained emotion model weights
-│   ├── id2label.pt                   # Label mapping file
-│   └── tokenizer/                    # BERT tokenizer files
-│       ├── vocab.json
-│       ├── merges.txt
-│       ├── special_tokens_map.json
-│       └── tokenizer_config.json
-├── frontend/                         # React + Vite frontend
-│   ├── App.jsx                       # Main React component
-│   ├── main.jsx                      # React entry point
-│   ├── App.css                       # Styling
-│   ├── index.html                    # HTML template
-│   ├── package.json                  # Node dependencies
-│   ├── vite.config.js                # Vite bundler config
-│   ├── nginx.conf                    # Nginx configuration
-│   └── Dockerfile                    # Frontend Docker image
-├── kubernetes/                       # Kubernetes manifests
-│   ├── namespace.yml                 # K8s namespace definition
-│   ├── backend-deployment.yml        # Backend deployment & service
-│   └── frontend-deployment.yml       # Frontend deployment & service
-├── Dockerfile                        # Backend Docker image
-├── docker-compose.yml                # Local Docker Compose setup
-├── requirements.txt                  # Python dependencies
-├── DEPLOYMENT.md                     # Detailed deployment guide
-├── README.md                         # Project overview
-└── CODE_DOCUMENTATION.md             # This file
-
-
-```
-
+**GitHub Repository:** [https://github.com/darrengunawan15/TrueTone](https://github.com/darrengunawan15/TrueTone)
 
 ---
 
@@ -89,7 +28,7 @@ TrueTone/
 ### For Azure Cloud Deployment
 
 
-- **Azure Account** with active subscription (student credits recommended)
+- **Azure Account** with active subscription
 - **Azure CLI** installed: https://learn.microsoft.com/en-us/cli/azure/install-azure-cli
 - **Docker Desktop** installed
 - **kubectl** (Kubernetes command-line tool): `az aks install-cli`
