@@ -55,7 +55,6 @@ TrueTone follows a microservices architecture pattern with clear separation of c
 ┌─────────────────────────────────────────────────────────┐
 │        Machine Learning Model Layer                      │
 │                                                          │
-│  - DistilRoBERTa tokenizer                             │
 │  - Pre-trained transformer model                       │
 │  - Emotion classification head                         │
 │  - Softmax probability distribution                    │
