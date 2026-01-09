@@ -45,7 +45,7 @@
 
 
 ```bash
-git clone https://github.com/your-username/truetone.git
+git clone https://github.com/darrengunawan15/truetone.git
 cd truetone
 ```
 
